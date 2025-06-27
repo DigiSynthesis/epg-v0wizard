@@ -4,7 +4,7 @@ Advanced IPTV M3U playlist management tool with smart channel detection, EPG man
 
 ## 🚀 Quick Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/iptv-playlist-manager)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/DigiSynthesis/iptv-playlist-manager)
 
 ## ⚡ Features
 

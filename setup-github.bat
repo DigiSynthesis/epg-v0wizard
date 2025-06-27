@@ -42,7 +42,7 @@ echo    - Keep it public for easy sharing
 echo    - DON'T initialize with README (we have one)
 echo.
 echo 2. Copy your repository URL and run:
-echo    git remote add origin https://github.com/YOUR_USERNAME/iptv-playlist-manager.git
+echo    git remote add origin https://github.com/DigiSynthesis/iptv-playlist-manager.git
 echo    git branch -M main
 echo    git push -u origin main
 echo.
