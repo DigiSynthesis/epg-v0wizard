@@ -4,7 +4,6 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci",
   "devCommand": "npm run dev",
-  "functions": {},
   "rewrites": [
     {
       "source": "/(.*)",
