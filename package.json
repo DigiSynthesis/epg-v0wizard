@@ -11,10 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.487.0",
-    "sonner": "^1.4.3",
+    "@hookform/resolvers": "^3.3.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -48,14 +45,17 @@
     "date-fns": "^2.30.0",
     "embla-carousel-react": "^8.0.0",
     "input-otp": "^1.2.4",
+    "lucide-react": "^0.487.0",
+    "react": "^18.2.0",
     "react-day-picker": "^8.8.0",
+    "react-dom": "^18.2.0",
     "react-hook-form": "^7.45.4",
     "react-resizable-panels": "^0.0.55",
     "recharts": "^2.7.2",
+    "sonner": "^1.4.3",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.7.0",
-    "@hookform/resolvers": "^3.3.1",
     "zod": "^3.22.2"
   },
   "devDependencies": {
@@ -71,6 +71,6 @@
     "postcss": "^8.4.27",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "vite": "^7.0.0"
   }
 }
