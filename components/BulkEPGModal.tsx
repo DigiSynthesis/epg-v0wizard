@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
 import { 
   Zap, 
   CheckCircle, 
   XCircle, 
-  Clock, 
   Search, 
   Globe,
-  AlertTriangle,
   Tv,
   Loader2
 } from 'lucide-react';
