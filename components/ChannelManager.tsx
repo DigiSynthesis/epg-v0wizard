@@ -5,6 +5,7 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import { Separator } from './ui/separator';
 import { Search, Tv, Globe, ExternalLink, Check, ChevronDown, X, Filter, Info, Zap } from 'lucide-react';
 import { EPGSearch } from './EPGSearch';
 import { LazyChannelList } from './LazyChannelList';
@@ -625,6 +626,10 @@ export function ChannelManager({ playlistData, onChannelUpdate, onBulkChannelUpd
                         );
                       })}
                     </div>
+                    
+                    {Object.keys(channelsByGroup).length > 1 && (
+                      <Separator className="my-4" />
+                    )}
                   </div>
                 ))}
               </div>
