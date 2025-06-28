@@ -30,9 +30,6 @@ export interface PlaylistData {
   groups: string[];
 }
 
-// Development mode flag - set to true to bypass authentication
-const DEVELOPMENT_MODE = true;
-
 function AppContent() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,25 +40,7 @@ function AppContent() {
   const [loadingUserData, setLoadingUserData] = useState(false);
 
   useEffect(() => {
-    if (DEVELOPMENT_MODE) {
-      // In development mode, create a mock user and skip authentication
-      const mockUser = {
-        id: 'dev-user-123',
-        email: 'dev@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        user_metadata: {}
-      } as SupabaseUser;
-      
-      setUser(mockUser);
-      setLoading(false);
-      return;
-    }
-
-    // Production authentication logic
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -90,11 +69,6 @@ function AppContent() {
   }, []);
 
   const loadUserEPGData = async (userId: string) => {
-    if (DEVELOPMENT_MODE) {
-      // Skip loading user data in development mode
-      return;
-    }
-
     setLoadingUserData(true);
     try {
       // Fetch user's EPG file from database
@@ -257,16 +231,6 @@ function AppContent() {
   };
 
   const handleSignOut = async () => {
-    if (DEVELOPMENT_MODE) {
-      // In development mode, just clear the user state
-      setUser(null);
-      setPlaylistData(null);
-      setModifiedChannelIds(new Set());
-      setActiveTab('upload');
-      toast.success('Signed out (development mode)');
-      return;
-    }
-
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast.error('Error signing out');
@@ -308,9 +272,7 @@ function AppContent() {
                 <h1 className="text-3xl font-bold">IPTV Playlist Manager</h1>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Cloud className="w-4 h-4" />
-                  <span>
-                    {DEVELOPMENT_MODE ? 'Development Mode' : `Signed in as ${user.email}`}
-                  </span>
+                  <span>Signed in as {user.email}</span>
                 </div>
               </div>
             </div>
@@ -318,7 +280,7 @@ function AppContent() {
               <ThemeToggle />
               <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
                 <LogOut className="w-4 h-4" />
-                {DEVELOPMENT_MODE ? 'Exit Dev Mode' : 'Sign Out'}
+                Sign Out
               </Button>
               {playlistData && (
                 <Button 

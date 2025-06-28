@@ -72,15 +72,15 @@ export function Auth() {
             Sign in to save and manage your EPG files in the cloud
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-6 py-6">
+        <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="p-6">
-              <form onSubmit={handleSignIn} className="space-y-6">
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <div className="relative">
@@ -135,8 +135,8 @@ export function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup" className="p-6">
-              <form onSubmit={handleSignUp} className="space-y-6">
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <div className="relative">
