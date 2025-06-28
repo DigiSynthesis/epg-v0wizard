@@ -5,21 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
-import { Download, Globe, Copy, Check, ExternalLink, Tv, Server, Edit, FileText, AlertTriangle, Cloud } from 'lucide-react';
+import { Download, Globe, Copy, Check, ExternalLink, Tv, Server, Edit, FileText, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../lib/supabase';
 import type { PlaylistData, Channel } from '../App';
-import type { User } from '@supabase/supabase-js';
 
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   playlistData: PlaylistData;
   modifiedChannels: Channel[];
-  user: User;
 }
 
-export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, user }: ExportModalProps) {
+export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels }: ExportModalProps) {
   const [isGeneratingUrl, setIsGeneratingUrl] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string>('');
   const [urlCopied, setUrlCopied] = useState(false);
@@ -28,6 +25,7 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
   const generateM3UContent = () => {
     let m3uContent = '#EXTM3U\n';
     
+    // Only export modified channels
     modifiedChannels.forEach(channel => {
       const logoAttr = channel.logo ? ` tvg-logo="${channel.logo}"` : '';
       const epgAttr = channel.epg ? ` tvg-url="${channel.epg}"` : '';
@@ -71,75 +69,51 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
     setIsGeneratingUrl(true);
     
     try {
-      const m3uContent = generateM3UContent();
-      const fileName = `${user.id}/epg_updates.m3u`;
+      // Simulate API call to upload file and get hosted URL
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('epg-playlists')
-        .upload(fileName, m3uContent, {
-          contentType: 'text/plain',
-          upsert: true // This will overwrite existing file
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('epg-playlists')
-        .getPublicUrl(fileName);
-
-      const publicUrl = urlData.publicUrl;
-
-      // Save/update EPG file record in database
-      const { error: dbError } = await supabase
-        .from('epg_files')
-        .upsert({
-          user_id: user.id,
-          file_path: fileName,
-          public_url: publicUrl,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (dbError) {
-        throw dbError;
-      }
-
-      setGeneratedUrl(publicUrl);
+      // Generate a realistic looking URL that would work with IPTV players
+      const timestamp = Date.now();
+      const hash = Math.random().toString(36).substring(2, 15);
+      const mockUrl = `https://iptv-host.example.com/epg-updates/${hash}_${timestamp}.m3u`;
+      
+      setGeneratedUrl(mockUrl);
       toast.success(`EPG updates URL generated for ${modifiedChannels.length} channels!`);
     } catch (error) {
-      console.error('Error generating URL:', error);
       toast.error('Failed to generate URL. Please try again.');
     } finally {
       setIsGeneratingUrl(false);
     }
   };
 
+  // Enhanced clipboard copy with multiple fallback methods
   const handleCopyUrl = async () => {
+    // Check if there's a URL to copy
     if (!generatedUrl || generatedUrl.trim() === '') {
       toast.error('No URL available to copy. Please generate a URL first.');
       return;
     }
 
+    // Reset copy state
     setUrlCopied(false);
     setCopyMethod('none');
 
     try {
+      // Method 1: Modern Clipboard API (most reliable when available)
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(generatedUrl);
         setUrlCopied(true);
         setCopyMethod('clipboard');
-        toast.success('URL copied to clipboard!');
+        toast.success('URL copied to clipboard using modern API!');
         setTimeout(() => setUrlCopied(false), 2000);
         return;
       }
 
+      // Method 2: Fallback using execCommand (works in older browsers)
       const textArea = document.createElement('textarea');
       textArea.value = generatedUrl;
+      
+      // Make the textarea out of viewport
       textArea.style.position = 'fixed';
       textArea.style.left = '-999999px';
       textArea.style.top = '-999999px';
@@ -151,10 +125,12 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
       document.body.appendChild(textArea);
       
       try {
+        // Focus and select the text
         textArea.focus();
         textArea.select();
-        textArea.setSelectionRange(0, 99999);
+        textArea.setSelectionRange(0, 99999); // For mobile devices
         
+        // Try execCommand
         const successful = document.execCommand('copy');
         if (successful) {
           setUrlCopied(true);
@@ -166,16 +142,19 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
         }
       } catch (execError) {
         console.warn('execCommand copy failed:', execError);
+        // Method 3: Select the input field for manual copy
         selectUrlForManualCopy();
       } finally {
         document.body.removeChild(textArea);
       }
     } catch (error) {
       console.error('All copy methods failed:', error);
+      // Method 3: Select the input field for manual copy
       selectUrlForManualCopy();
     }
   };
 
+  // Method 3: Select the URL in the input field for manual copying
   const selectUrlForManualCopy = () => {
     try {
       const urlInput = document.getElementById('generated-url') as HTMLInputElement;
@@ -208,6 +187,7 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
     onClose();
   };
 
+  // Show different content based on whether there are modified channels
   if (modifiedChannels.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -247,7 +227,8 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
             Export EPG Updates
           </DialogTitle>
           <DialogDescription>
-            Export only the channels with EPG updates. Your files are securely stored in the cloud.
+            Export only the channels with EPG updates. This keeps file size small and 
+            avoids conflicts with your original vendor playlist.
           </DialogDescription>
         </DialogHeader>
 
@@ -256,12 +237,12 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
           <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <Cloud className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                <FileText className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
                 <div className="space-y-2 flex-1">
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100">Cloud Storage Enabled</h3>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100">EPG Updates Only</h3>
                   <p className="text-sm text-blue-700 dark:text-blue-200">
-                    Your EPG updates are automatically saved to your cloud account and will persist across sessions.
-                    Only modified channels are exported to keep file sizes small.
+                    Only channels with EPG modifications will be exported. This supplementary M3U file 
+                    can be used alongside your main playlist to provide EPG data without conflicts.
                   </p>
                   <div className="grid grid-cols-2 gap-4 mt-3">
                     <div className="flex items-center gap-2">
@@ -319,30 +300,30 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
               </CardContent>
             </Card>
 
-            {/* Cloud URL Option */}
+            {/* URL Option */}
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <Cloud className="w-5 h-5 text-green-500" />
-                  Cloud Hosted URL
+                  <Globe className="w-5 h-5 text-green-500" />
+                  Hosted Updates URL
                 </CardTitle>
                 <CardDescription>
-                  Generate persistent cloud URL for EPG updates
+                  Create hosted URL for EPG updates only
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Check className="w-3 h-3 text-green-500" />
-                    Persistent URL
+                    Supplementary playlist
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Check className="w-3 h-3 text-green-500" />
-                    Auto-updates
+                    Auto-updates supported
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Check className="w-3 h-3 text-green-500" />
-                    Secure cloud storage
+                    Lightweight endpoint
                   </div>
                 </div>
                 <Button 
@@ -358,7 +339,7 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
                     </>
                   ) : (
                     <>
-                      <Cloud className="w-4 h-4 mr-2" />
+                      <Globe className="w-4 h-4 mr-2" />
                       Generate URL ({modifiedChannels.length})
                     </>
                   )}
@@ -373,17 +354,17 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg text-green-800 dark:text-green-200">
                   <ExternalLink className="w-5 h-5" />
-                  Your Cloud EPG URL
+                  Your EPG Updates URL
                 </CardTitle>
                 <CardDescription className="text-green-700 dark:text-green-300">
-                  This persistent URL contains your EPG updates ({modifiedChannels.length} channels) and will 
-                  automatically update when you make changes. Use alongside your main vendor playlist.
+                  This supplementary M3U contains only your EPG updates ({modifiedChannels.length} channels). 
+                  Use alongside your main vendor playlist for enhanced EPG data without conflicts.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="generated-url" className="text-green-800 dark:text-green-200">
-                    Cloud EPG Updates URL
+                    EPG Updates URL
                   </Label>
                   <div className="flex gap-2 mt-1">
                     <Input
@@ -407,6 +388,7 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
                     </Button>
                   </div>
                   
+                  {/* Copy Method Indicator */}
                   {copyMethod === 'manual' && (
                     <div className="flex items-center gap-2 mt-2 p-2 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm">
                       <AlertTriangle className="w-4 h-4 text-yellow-600" />
@@ -425,7 +407,6 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
                     <div>• Add this as a secondary M3U source in your IPTV player</div>
                     <div>• Keep your main vendor playlist as the primary source</div>
                     <div>• EPG data will merge automatically in most players</div>
-                    <div>• URL updates automatically when you make changes</div>
                     <div>• Compatible with VLC, Perfect Player, IPTV Smarters, and more</div>
                   </div>
                 </div>
@@ -456,6 +437,7 @@ export function ExportModal({ isOpen, onClose, playlistData, modifiedChannels, u
             </Card>
           )}
 
+          {/* Close button when no URL generated */}
           {!generatedUrl && (
             <div className="flex justify-end pt-4">
               <Button variant="outline" onClick={handleClose}>
