@@ -79,7 +79,7 @@ export function Auth() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin">
+            <TabsContent value="signin" className="p-6">
               <form onSubmit={handleSignIn} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
@@ -135,7 +135,7 @@ export function Auth() {
               </form>
             </TabsContent>
 
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="p-6">
               <form onSubmit={handleSignUp} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
