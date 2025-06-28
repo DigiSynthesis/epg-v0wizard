@@ -11,7 +11,6 @@ import {
   XCircle, 
   Search, 
   Globe,
-  Tv,
   Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
